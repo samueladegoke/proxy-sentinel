@@ -409,7 +409,7 @@ async def track_proxy(request: TrackRequest, background_tasks: BackgroundTasks):
         }
     
     # Trigger an immediate check so the user gets instant feedback
-    background_tasks.add_task(proxy_tracker.check_tracked, ws_manager)
+    background_tasks.add_task(perform_tracking_checks)
 
     return {
         "status": "success",

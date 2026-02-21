@@ -651,10 +651,10 @@ socks5://proxy.example.com:1080`}
                         Copy
                       </button>
                       <button
-                        onClick={() => setProxies([])}
-                        disabled={loading || proxies.length === 0}
+                        onClick={() => { setProxies([]); setCustomProxyInput(''); }}
+                        disabled={loading || (proxies.length === 0 && !customProxyInput.trim())}
                         className="flex-1 flex items-center justify-center gap-2 bg-destructive/10 text-destructive px-4 py-2 rounded-lg text-sm font-medium hover:bg-destructive/20 disabled:opacity-50 transition-colors"
-                        title="Clear Results"
+                        title="Clear Results and Input"
                       >
                         <Trash2 className="w-4 h-4" />
                         Clear

@@ -465,6 +465,25 @@ def set_tracking_config(request: TrackingConfigRequest):
         "new_interval": request.interval_minutes
     }
 
+@app.get("/api/debug/ip_change")
+async def debug_ip_change():
+    """Debug endpoint to broadcast a synthetic IP change event"""
+    sessions_dict = tracking_manager.get_all()
+    target_session = "DEBUG_SESSION"
+    for sid in sessions_dict.keys():
+        target_session = sid
+        break
+    
+    await ws_manager.broadcast({
+        "type": "ip_change",
+        "session": target_session,
+        "old_ip": "41.242.137.88",
+        "new_ip": "102.89.34.12",
+        "city": "Abuja",
+        "isp": "MTN Nigeria",
+        "timestamp": time.time()
+    })
+    return {"status": "simulated", "session": target_session}
 
 # --- WebSocket for Streaming Results ---
 

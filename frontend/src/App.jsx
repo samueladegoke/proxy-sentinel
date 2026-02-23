@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import {
   CheckCircle2, AlertTriangle, ShieldCheck, Play, Monitor, Search, RefreshCw,
   X, Info, ChevronUp, ChevronDown, ArrowUpDown, Clipboard, Trash2, Bell,
-  BellOff, Settings, Volume2, VolumeX, Zap, Star
+  BellOff, Settings, Volume2, VolumeX, Zap, Star, History
 } from 'lucide-react'
 import { cn } from './lib/utils'
 import { soundNotifier } from './lib/sound'
@@ -112,6 +112,7 @@ function App() {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [error, setError] = useState(null);
   const [protocol, setProtocol] = useState('http');
+  const [ipChanges, setIpChanges] = useState([]);
 
   // Progress state for streaming
   const [progress, setProgress] = useState({ completed: 0, total: 0, duration: 0 });
@@ -170,8 +171,9 @@ function App() {
     if (data.type === 'tracking_check_complete') {
       setLastUpdate(new Date().toLocaleTimeString());
     } else if (data.type === 'ip_change') {
-      if (trackingRef.current && data.session !== trackingRef.current) {
-        return; // Ignore updates for previously tracked sessions
+      // Only filter if we have an active tracking session AND the session doesn't match AND it's not a debug event
+      if (trackingRef.current && data.session !== trackingRef.current && data.session !== 'DEBUG_SESSION') {
+        return; // Ignore updates for other sessions
       }
 
       if (settings.soundEnabled) {
@@ -184,11 +186,32 @@ function App() {
           type: 'warning'
         });
       }
+
+      const now = Date.now();
+      const newEntry = {
+        id: `${now}-${Math.random()}`,
+        session: data.session,
+        oldIp: data.old_ip,
+        newIp: data.new_ip,
+        time: new Date().toLocaleTimeString(),
+        city: data.city || 'Unknown',
+        _ts: now
+      };
+      setIpChanges(prev => {
+        // Deduplicate: skip if identical event already captured within the last 5 seconds
+        const isDuplicate = prev.length > 0 &&
+          prev[0].oldIp === newEntry.oldIp &&
+          prev[0].newIp === newEntry.newIp &&
+          prev[0].session === newEntry.session &&
+          (now - prev[0]._ts) < 5000;
+        if (isDuplicate) return prev;
+        return [newEntry, ...prev].slice(0, 50);
+      });
     }
   }, [settings]);
 
-  // WebSocket connection (only when tracking)
-  useWebSocket(handleWebSocketMessage, !!tracking);
+  // WebSocket connection — always open so events are never missed due to race conditions
+  useWebSocket(handleWebSocketMessage, true);
 
   const updateTrackingInterval = useCallback(async (interval) => {
     try {
@@ -316,6 +339,7 @@ function App() {
 
     setLoading(true);
     setProxies([]);
+    setIpChanges([]);
     setProgress({ completed: 0, total: proxiesToCheck.length, duration: 0 });
     setCheckStartTime(Date.now());
 
@@ -419,6 +443,7 @@ function App() {
     }
 
     setTracking(session);
+    setIpChanges([]);
 
     try {
       // Build payload - include proxyStr so backend can track custom (non-default) proxies
@@ -461,6 +486,7 @@ function App() {
       console.error("Error stopping tracking:", err);
     } finally {
       setTracking(null);
+      setIpChanges([]);
     }
   }, [tracking]);
 
@@ -675,6 +701,46 @@ socks5://proxy.example.com:1080`}
                 )}
               </div>
             </div>
+
+            {/* IP Changes History */}
+            {ipChanges.length > 0 && (
+              <div className="glassmorphism p-6 rounded-xl animate-in fade-in slide-in-from-top-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-bold flex items-center gap-2">
+                    <History className="w-5 h-5 text-primary" />
+                    IP History
+                  </h4>
+                  <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">{ipChanges.length} captured</span>
+                </div>
+
+                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  {ipChanges.map(change => (
+                    <div key={change.id} className="bg-black/40 border border-white/5 rounded-lg p-3 text-sm flex flex-col gap-2 relative group hover:border-primary/50 transition-colors">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-muted-foreground font-mono">{change.session}</span>
+                        <span className="text-primary/70">{change.time}</span>
+                      </div>
+                      <div className="flex items-center justify-between font-mono gap-2">
+                        <span className="text-destructive/80 line-through opacity-70 truncate" title={change.oldIp}>{change.oldIp}</span>
+                        <ArrowUpDown className="w-3 h-3 text-muted-foreground rotate-90 shrink-0" />
+                        <span className="text-emerald-400 font-bold truncate" title={change.newIp}>{change.newIp}</span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground uppercase tracking-wider text-right">
+                        {change.city}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setIpChanges([])}
+                  className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2 bg-destructive/10 text-destructive border border-destructive/20 rounded-lg text-xs font-medium hover:bg-destructive/20 transition-all"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Clear History
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Main Data Table Section */}

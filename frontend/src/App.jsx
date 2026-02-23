@@ -187,25 +187,26 @@ function App() {
         });
       }
 
-      const now = Date.now();
-      const newEntry = {
-        id: `${now}-${Math.random()}`,
-        session: data.session,
-        oldIp: data.old_ip,
-        newIp: data.new_ip,
-        time: new Date().toLocaleTimeString(),
-        city: data.city || 'Unknown',
-        _ts: now
-      };
       setIpChanges(prev => {
-        // Deduplicate: skip if identical event already captured within the last 5 seconds
-        const isDuplicate = prev.length > 0 &&
-          prev[0].oldIp === newEntry.oldIp &&
-          prev[0].newIp === newEntry.newIp &&
-          prev[0].session === newEntry.session &&
-          (now - prev[0]._ts) < 5000;
-        if (isDuplicate) return prev;
-        return [newEntry, ...prev].slice(0, 50);
+        const now = Date.now();
+        // Deduplicate: same session + same IPs within the last 5s
+        if (
+          prev.length > 0 &&
+          prev[0].oldIp === data.old_ip &&
+          prev[0].newIp === data.new_ip &&
+          prev[0].session === data.session &&
+          (now - prev[0]._ts) < 5000
+        ) return prev;
+
+        return [{
+          id: `${now}-${Math.random()}`,
+          session: data.session,
+          oldIp: data.old_ip,
+          newIp: data.new_ip,
+          time: new Date(now).toLocaleTimeString(),
+          city: data.city || 'Unknown',
+          _ts: now
+        }, ...prev].slice(0, 50);
       });
     }
   }, [settings]);

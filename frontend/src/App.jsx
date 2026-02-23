@@ -140,6 +140,8 @@ function App() {
 
   // WebSocket ref for streaming
   const checkWsRef = useRef(null);
+  // Dedup guard: tracks the last processed ip_change event key+time
+  const lastIpChangeRef = useRef(null);
 
   // Apply settings to sound notifier
   useEffect(() => {
@@ -187,27 +189,22 @@ function App() {
         });
       }
 
-      setIpChanges(prev => {
-        const now = Date.now();
-        // Deduplicate: same session + same IPs within the last 5s
-        if (
-          prev.length > 0 &&
-          prev[0].oldIp === data.old_ip &&
-          prev[0].newIp === data.new_ip &&
-          prev[0].session === data.session &&
-          (now - prev[0]._ts) < 5000
-        ) return prev;
+      // Synchronous dedup via ref — works across concurrent closures and StrictMode double-mounts
+      const now = Date.now();
+      const eventKey = `${data.session}|${data.old_ip}|${data.new_ip}`;
+      const last = lastIpChangeRef.current;
+      if (last && last.key === eventKey && (now - last.ts) < 5000) return;
+      lastIpChangeRef.current = { key: eventKey, ts: now };
 
-        return [{
-          id: `${now}-${Math.random()}`,
-          session: data.session,
-          oldIp: data.old_ip,
-          newIp: data.new_ip,
-          time: new Date(now).toLocaleTimeString(),
-          city: data.city || 'Unknown',
-          _ts: now
-        }, ...prev].slice(0, 50);
-      });
+      setIpChanges(prev => [{
+        id: `${now}-${Math.random()}`,
+        session: data.session,
+        oldIp: data.old_ip,
+        newIp: data.new_ip,
+        time: new Date(now).toLocaleTimeString(),
+        city: data.city || 'Unknown',
+        _ts: now
+      }, ...prev].slice(0, 50));
     }
   }, [settings]);
 

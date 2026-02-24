@@ -173,9 +173,11 @@ function App() {
     if (data.type === 'tracking_check_complete') {
       setLastUpdate(new Date().toLocaleTimeString());
     } else if (data.type === 'ip_change') {
-      // Only filter if we have an active tracking session AND the session doesn't match AND it's not a debug event
-      if (trackingRef.current && data.session !== trackingRef.current && data.session !== 'DEBUG_SESSION') {
-        return; // Ignore updates for other sessions
+      // Reject ip_change events if not actively tracking any session
+      if (!trackingRef.current) return;
+      // Only accept events for the session we're tracking (or debug events)
+      if (data.session !== trackingRef.current && data.session !== 'DEBUG_SESSION') {
+        return;
       }
 
       if (settings.soundEnabled) {

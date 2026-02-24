@@ -381,6 +381,8 @@ async def track_proxy(request: TrackRequest, background_tasks: BackgroundTasks):
     Accepts either:
     1. A session ID that exists in DEFAULT_PROXIES (auto-resolved)
     2. A session ID + full proxy string (for custom proxies from WebSocket check)
+    
+    Enforces single-session tracking: adding a new session removes all others.
     """
     target_proxy = request.proxy  # Use explicitly provided proxy first
     
@@ -399,6 +401,13 @@ async def track_proxy(request: TrackRequest, background_tasks: BackgroundTasks):
                 "When using custom proxies, provide the full proxy string in the 'proxy' field."
             )
         )
+    
+    # Enforce single-session: purge all existing tracked sessions before adding the new one
+    existing = tracking_manager.get_all()
+    for old_sid in list(existing.keys()):
+        if old_sid != request.session:
+            tracking_manager.remove(old_sid)
+            logger.info(f"Auto-removed old tracked session: {old_sid}")
     
     added = tracking_manager.add(request.session, target_proxy)
     

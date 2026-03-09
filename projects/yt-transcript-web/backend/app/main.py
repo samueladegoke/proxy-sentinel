@@ -16,6 +16,7 @@ from .transcript_service import (
     fetch_transcript,
     to_markdown,
     to_plain_text,
+    analyze_transcript,
 )
 
 load_dotenv()
@@ -59,6 +60,20 @@ class SummaryResponse(BaseModel):
     video_id: str
     summary: str
     segments_used: int
+
+
+class AnalyzeRequest(BaseModel):
+    """Request model for AI analysis."""
+    url: str
+    analysis_type: Optional[str] = "summary"
+
+
+class AnalyzeResponse(BaseModel):
+    """Response model for AI analysis."""
+    summary: Optional[str] = None
+    action_points: Optional[str] = None
+    next_steps: Optional[str] = None
+    structured_edit: Optional[str] = None
 
 
 @app.get("/")
@@ -117,6 +132,28 @@ def post_transcript(request: TranscriptRequest):
     return {
         "video_id": video_id,
         "segments": [seg.to_dict() for seg in segments],
+    }
+
+
+@app.post("/api/analyze")
+def analyze_video(request: AnalyzeRequest):
+    """Analyze a YouTube video transcript using AI."""
+    try:
+        video_id, segments = fetch_transcript(request.url)
+    except TranscriptError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    # Return all formats needed for frontend as requested
+    summary = analyze_transcript(segments, "summary")
+    action_points = analyze_transcript(segments, "action_points")
+    next_steps = analyze_transcript(segments, "next_steps")
+    structured_edit = analyze_transcript(segments, "structured_edit")
+
+    return {
+        "summary": summary,
+        "action_points": action_points,
+        "next_steps": next_steps,
+        "structured_edit": structured_edit,
     }
 
 

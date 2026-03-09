@@ -16,6 +16,7 @@ from app.transcript_service import (
     fetch_transcript,
     to_markdown,
     to_plain_text,
+    analyze_transcript,
 )
 
 
@@ -31,14 +32,9 @@ def cli() -> None:
 @click.option(
     "--format",
     "fmt",
-    type=click.Choice(["plain", "md", "json"], case_sensitive=False),
-    default="plain",
-    help="Output format: plain (text), md (markdown), or json.",
-)
-@click.option(
-    "--timestamps/--no-timestamps",
-    default=True,
-    help="Include timestamps in plain text output. (default: enabled)",
+    type=click.Choice(["txt-timestamps", "txt-clean", "md", "json"], case_sensitive=False),
+    default="txt-timestamps",
+    help="Output format: txt-timestamps, txt-clean, md, or json.",
 )
 @click.option(
     "--language",
@@ -47,7 +43,7 @@ def cli() -> None:
     multiple=True,
     help="Preferred language codes (e.g., en, de). Can be repeated.",
 )
-def extract(url: str, fmt: str, timestamps: bool, languages: tuple[str, ...]) -> None:
+def extract(url: str, fmt: str, languages: tuple[str, ...]) -> None:
     """Extract transcript from a YouTube video URL.
 
     URL must be a valid YouTube video URL (watch, shorts, embed, or youtu.be).
@@ -72,11 +68,10 @@ def extract(url: str, fmt: str, timestamps: bool, languages: tuple[str, ...]) ->
         )
     elif fmt == "md":
         output = to_markdown(segments, title=f"Transcript: {video_id}")
-    else:  # plain
-        if timestamps:
-            output = to_plain_text(segments)
-        else:
-            output = "\n".join(seg.text for seg in segments)
+    elif fmt == "txt-clean":
+        output = "\n".join(seg.text for seg in segments)
+    else:  # txt-timestamps (default)
+        output = to_plain_text(segments)
 
     click.echo(output)
 
@@ -84,54 +79,37 @@ def extract(url: str, fmt: str, timestamps: bool, languages: tuple[str, ...]) ->
 @cli.command()
 @click.argument("url")
 @click.option(
+    "--type",
+    "analysis_type",
+    type=click.Choice(["summary", "action_points", "next_steps", "professional-edit"], case_sensitive=False),
+    default="summary",
+    help="Analysis type.",
+)
+@click.option(
     "--format",
     "fmt",
-    type=click.Choice(["plain", "md", "json"], case_sensitive=False),
-    default="plain",
-    help="Output format: plain (text), md (markdown), or json.",
+    type=click.Choice(["txt", "md"], case_sensitive=False),
+    default="txt",
+    help="Output format: txt or md.",
 )
-@click.option(
-    "--limit",
-    type=int,
-    default=5,
-    help="Number of summary sentences to generate. (default: 5)",
-)
-@click.option(
-    "--language",
-    "-l",
-    "languages",
-    multiple=True,
-    help="Preferred language codes (e.g., en, de). Can be repeated.",
-)
-def summary(url: str, fmt: str, limit: int, languages: tuple[str, ...]) -> None:
-    """Summarize a YouTube video transcript.
+def analyze(url: str, analysis_type: str, fmt: str) -> None:
+    """Analyze a YouTube video transcript using AI.
 
-    URL must be a valid YouTube video URL. Outputs a summary of the content.
+    Supported types: summary, action_points, next_steps, professional-edit.
     """
-    if limit <= 0:
-        click.echo("Error: --limit must be a positive integer.", err=True)
-        sys.exit(1)
-
-    lang_list = list(languages) if languages else None
     try:
-        video_id, segments = fetch_transcript(url, languages=lang_list)
+        video_id, segments = fetch_transcript(url)
     except TranscriptError as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)
 
-    # Generate summary by taking the first N segments' text
-    summary_segments = segments[:limit] if segments else []
-    summary_text = " ".join(seg.text for seg in summary_segments)
+    result = analyze_transcript(segments, analysis_type)
 
-    if fmt == "json":
-        output = json.dumps(
-            {"video_id": video_id, "summary": summary_text, "segments_used": limit},
-            indent=2,
-        )
-    elif fmt == "md":
-        output = f"# Summary: {video_id}\n\n{summary_text}"
-    else:  # plain
-        output = summary_text
+    if fmt == "md":
+        header = analysis_type.replace("_", " ").replace("-", " ").title()
+        output = f"# {header}\n\n{result}"
+    else:  # txt
+        output = result
 
     click.echo(output)
 

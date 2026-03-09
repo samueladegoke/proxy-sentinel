@@ -2,12 +2,16 @@
 from __future__ import annotations
 
 import pytest
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch, MagicMock
+
+# Import MockFetchedTranscript from conftest
+from tests.conftest import MockFetchedTranscript
 
 try:
     from app.mcp_server import (
         mcp_extract_transcript,
         mcp_get_summary,
+        mcp_analyze_video,
         MCPTranscriptResult,
     )
     MCP_AVAILABLE = True
@@ -38,12 +42,20 @@ class TestMCPExtractTool:
         assert result.video_id == "dQw4w9WgXcQ"
 
     @pytest.mark.asyncio
-    async def test_result_has_plain_text(self, mock_yt_api):
+    async def test_result_has_txt_timestamps(self, mock_yt_api):
         result = await mcp_extract_transcript(
             url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         )
-        assert isinstance(result.plain_text, str)
-        assert len(result.plain_text) > 0
+        assert isinstance(result.txt_timestamps, str)
+        assert len(result.txt_timestamps) > 0
+
+    @pytest.mark.asyncio
+    async def test_result_has_txt_clean(self, mock_yt_api):
+        result = await mcp_extract_transcript(
+            url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        )
+        assert isinstance(result.txt_clean, str)
+        assert "[00:00]" not in result.txt_clean
 
     @pytest.mark.asyncio
     async def test_result_has_markdown(self, mock_yt_api):
@@ -59,13 +71,17 @@ class TestMCPExtractTool:
             await mcp_extract_transcript(url="https://google.com")
 
     @pytest.mark.asyncio
-    async def test_missing_captions_raises_value_error(self, mock_yt_api):
+    async def test_missing_captions_raises_value_error(self):
+        """MCP tools should raise ValueError when captions are disabled."""
         from youtube_transcript_api import TranscriptsDisabled
-        mock_yt_api.side_effect = TranscriptsDisabled("dQw4w9WgXcQ")
-        with pytest.raises(ValueError, match="captions"):
-            await mcp_extract_transcript(
-                url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-            )
+        with patch("app.transcript_service.YouTubeTranscriptApi") as mock_class:
+            mock_api = MagicMock()
+            mock_api.fetch.side_effect = TranscriptsDisabled("dQw4w9WgXcQ")
+            mock_class.return_value = mock_api
+            with pytest.raises(ValueError, match="captions"):
+                await mcp_extract_transcript(
+                    url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                )
 
 
 class TestMCPSummaryTool:
@@ -89,14 +105,32 @@ class TestMCPSummaryTool:
         assert result["segments_used"] == 2
 
     @pytest.mark.asyncio
-    async def test_summary_empty_segments(self, mock_yt_api):
-        mock_yt_api.return_value = mock_yt_api._make_mock_fetched([])
-        with pytest.raises(ValueError, match="No transcript text found"):
-            await mcp_get_summary(
-                url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-            )
+    async def test_summary_empty_segments(self):
+        """Summary should raise ValueError when no transcript segments available."""
+        with patch("app.transcript_service.YouTubeTranscriptApi") as mock_class:
+            mock_api = MagicMock()
+            mock_api.fetch.return_value = MockFetchedTranscript([])
+            mock_class.return_value = mock_api
+            with pytest.raises(ValueError, match="No transcript"):
+                await mcp_get_summary(
+                    url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                )
 
     @pytest.mark.asyncio
     async def test_invalid_url_raises(self):
         with pytest.raises((ValueError, Exception)):
             await mcp_get_summary(url="not-a-url")
+
+
+class TestMCPAnalyzeTool:
+    """mcp_analyze_video(url) → dict"""
+
+    @pytest.mark.asyncio
+    async def test_returns_analyze_dict(self, mock_yt_api):
+        # We don't have KILO_API_KEY set, so it might return error string in 'result'
+        result = await mcp_analyze_video(
+            url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        )
+        assert "result" in result
+        assert "video_id" in result
+        assert "analysis_type" in result

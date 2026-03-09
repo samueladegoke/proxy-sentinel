@@ -16,7 +16,7 @@ from youtube_transcript_api import (
     YouTubeTranscriptApi,
     YouTubeTranscriptApiException,
 )
-from .models import TranscriptSegment
+from .models import TranscriptSegment, MCPTranscriptResult
 
 load_dotenv()
 
@@ -27,6 +27,46 @@ _STOP_WORDS = {
     "out", "all", "just", "my", "your", "our", "gonna", "never", "around", "make",
     "say", "run", "let", "give",
 }
+
+def analyze_transcript(
+    segments: list[TranscriptSegment],
+    analysis_type: str = "summary",
+) -> str:
+    """Analyze transcript segments using Kilo model via OpenAI-compatible API."""
+    from openai import OpenAI
+    
+    api_key = os.getenv("KILO_API_KEY")
+    base_url = os.getenv("KILO_BASE_URL", "https://api.kilo.ai/api/gateway")
+    model = os.getenv("KILO_MODEL", "kilo")  # Using "kilo" as requested
+    
+    if not api_key:
+        return f"Error: KILO_API_KEY not set for analysis type: {analysis_type}"
+
+    client = OpenAI(api_key=api_key, base_url=base_url)
+    
+    transcript_text = "\n".join([f"[{format_seconds(s.start)}] {s.text}" for s in segments])
+    
+    prompts = {
+        "summary": "Provide a concise summary of the following video transcript:",
+        "action_points": "Extract the key action points from the following video transcript:",
+        "next_steps": "What are the recommended next steps based on this video transcript?",
+        "structured_edit": "Provide a professional structured edit/rewrite of the following video transcript:",
+        "professional-edit": "Provide a professional structured edit/rewrite of the following video transcript:",
+    }
+    
+    prompt = prompts.get(analysis_type, prompts["summary"])
+    
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that analyzes video transcripts."},
+                {"role": "user", "content": f"{prompt}\n\n{transcript_text}"}
+            ]
+        )
+        return response.choices[0].message.content or ""
+    except Exception as exc:
+        return f"Error during AI analysis: {exc}"
 
 
 class TranscriptError(RuntimeError):

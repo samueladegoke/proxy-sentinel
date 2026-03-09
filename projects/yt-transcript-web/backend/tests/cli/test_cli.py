@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 import json
 import pytest
+from unittest.mock import patch
 from click.testing import CliRunner
 
 pytest.importorskip("click")
@@ -67,9 +68,11 @@ class TestCLIAnalyze:
         runner = CliRunner()
         # Mocking analyze_transcript is harder because it's imported in CLI
         # But we can at least check if the command exists and runs
-        result = runner.invoke(cli, ["analyze", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "--type", "summary"])
-        # It might fail if no API key is set, but exit_code 0 if mocked correctly or 1 with error message
-        assert "Error: KILO_API_KEY not set" in result.output or result.exit_code == 0
+        with patch("cli.analyze_transcript") as mock_analyze:
+            mock_analyze.return_value = "This is a mock summary"
+            result = runner.invoke(cli, ["analyze", "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "--type", "summary"])
+            assert result.exit_code == 0
+            assert "This is a mock summary" in result.output
 
     def test_analyze_help(self):
         """analyze --help should show usage."""

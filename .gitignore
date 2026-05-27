@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Large binary files
+*.mmdb
+dbip-city-lite.mmdb
+
+# Test coverage
+coverage/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+venv/
+
+# Runtime diagnostics and generated state
+backend/browserleaks_cache.json
+backend/scan_sample_logs/
+Format Data for Excel.md
+proxy_checker.py
+
+# Local agent/runtime state
+.omx/
+.remember/
+.clawpatch/

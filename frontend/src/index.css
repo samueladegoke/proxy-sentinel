@@ -1,0 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 216 42% 96%;
+    --foreground: 219 82% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 219 82% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 219 82% 8%;
+
+    --primary: 193 96% 43%;
+    --primary-foreground: 219 82% 8%;
+
+    --secondary: 216 34% 92%;
+    --secondary-foreground: 219 82% 8%;
+
+    --muted: 216 24% 88%;
+    --muted-foreground: 217 18% 38%;
+
+    --accent: 43 66% 58%;
+    --accent-foreground: 219 82% 8%;
+
+    --destructive: 8 75% 47%;
+    --destructive-foreground: 0 0% 100%;
+
+    --info: 43 66% 58%;
+
+    --border: 216 24% 80%;
+    --input: 216 24% 80%;
+    --ring: 193 96% 43%;
+    --radius: 0.875rem;
+  }
+
+  :root[data-theme='dark'] {
+    --background: 219 82% 7%;
+    --foreground: 43 42% 94%;
+
+    --card: 220 62% 11%;
+    --card-foreground: 43 42% 94%;
+
+    --popover: 220 62% 11%;
+    --popover-foreground: 43 42% 94%;
+
+    --primary: 193 100% 54%;
+    --primary-foreground: 219 82% 7%;
+
+    --secondary: 219 48% 15%;
+    --secondary-foreground: 43 42% 94%;
+
+    --muted: 220 38% 20%;
+    --muted-foreground: 214 22% 70%;
+
+    --accent: 43 70% 22%;
+    --accent-foreground: 43 92% 72%;
+
+    --destructive: 8 78% 61%;
+    --destructive-foreground: 0 0% 100%;
+
+    --info: 43 92% 72%;
+
+    --border: 219 34% 26%;
+    --input: 219 34% 30%;
+    --ring: 193 100% 54%;
+  }
+
+  /* Sleek scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    min-width: 320px;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+}
+
+@layer utilities {
+  .dashboard-shell {
+    background:
+      radial-gradient(circle at 9% 0%, hsl(193 96% 43% / 0.13), transparent 34rem),
+      radial-gradient(circle at 84% 7%, hsl(43 66% 58% / 0.15), transparent 30rem),
+      linear-gradient(180deg, hsl(216 42% 97%), hsl(216 34% 91%));
+  }
+
+  :root[data-theme='dark'] .dashboard-shell {
+    background:
+      radial-gradient(circle at 9% 0%, hsl(193 100% 54% / 0.20), transparent 36rem),
+      radial-gradient(circle at 84% 7%, hsl(43 92% 72% / 0.16), transparent 32rem),
+      linear-gradient(180deg, hsl(219 82% 7%), hsl(220 62% 10%));
+  }
+
+  .dashboard-panel {
+    @apply border border-border bg-card shadow-[0_18px_60px_hsl(218_30%_12%/0.08)];
+  }
+
+  :root[data-theme='dark'] .dashboard-panel {
+    box-shadow: 0 18px 60px hsl(220 28% 3% / 0.38);
+  }
+
+  .panel-subtle {
+    @apply border border-border/80 bg-secondary/55;
+  }
+
+  .control-input {
+    @apply rounded-xl border border-input bg-card px-3 py-2 text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .primary-action {
+    @apply rounded-xl bg-primary px-4 py-3 font-bold text-primary-foreground shadow-[0_12px_30px_hsl(193_96%_43%/0.24)] transition hover:-translate-y-0.5 hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .secondary-action {
+    @apply rounded-xl border border-border bg-card px-4 py-2.5 font-semibold text-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .danger-action {
+    @apply rounded-xl border border-destructive/25 bg-destructive/10 px-4 py-2.5 font-semibold text-destructive transition hover:bg-destructive/15 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .ghost-action {
+    @apply rounded-xl px-3 py-2 font-semibold text-muted-foreground transition hover:bg-secondary hover:text-foreground;
+  }
+
+  .status-dot {
+    @apply inline-flex h-2.5 w-2.5 rounded-full bg-primary;
+    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.12);
+  }
+
+  .table-row {
+    @apply border-b border-border/70 transition hover:bg-secondary/55;
+  }
+}

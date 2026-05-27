@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Proxy Sentinel Dashboard Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1ff976",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#050505",
+                        "glass": "rgba(255, 255, 255, 0.03)",
+                        "danger": "#fa5538",
+                        "info": "#00f0ff"
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #050505;
+        }
+        .glassmorphism {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .neon-glow-primary {
+            box-shadow: 0 0 15px rgba(31, 249, 118, 0.15);
+        }
+        .neon-glow-danger {
+            box-shadow: 0 0 15px rgba(250, 85, 56, 0.15);
+        }
+        .neon-glow-info {
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+        }
+        .asymmetric-grid {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 2rem;
+        }
+        @media (max-width: 1024px) {
+            .asymmetric-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1ff976;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden selection:bg-primary/30">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 glassmorphism border-b border-white/5 px-8 py-4">
+<div class="max-w-[1600px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">shield_locked</span>
+<h1 class="text-xl font-bold tracking-tight uppercase">Proxy Sentinel</h1>
+</div>
+<div class="hidden md:flex items-center gap-2 ml-8 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="text-[10px] font-bold text-primary tracking-widest uppercase">Live System Operational</span>
+</div>
+</div>
+<nav class="hidden lg:flex items-center gap-10">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium text-slate-400 hover:text-primary transition-colors" href="#">Nodes</a>
+<a class="text-sm font-medium text-slate-400 hover:text-primary transition-colors" href="#">Traffic Analysis</a>
+<a class="text-sm font-medium text-slate-400 hover:text-primary transition-colors" href="#">Security Audit</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-white/5 rounded-lg transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-8 w-px bg-white/10 mx-2"></div>
+<div class="flex items-center gap-3 bg-white/5 p-1 pr-3 rounded-full border border-white/5">
+<div class="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm text-primary">person</span>
+</div>
+<span class="text-xs font-bold tracking-tight">ADMIN_ROOT</span>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-28 pb-20 px-8 max-w-[1600px] mx-auto">
+<!-- Dashboard Header -->
+<div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h2 class="text-4xl font-bold tracking-tighter mb-2">Operational Overview</h2>
+<p class="text-slate-500 font-medium">Real-time status of your global proxy infrastructure.</p>
+</div>
+<div class="flex gap-4">
+<button class="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 px-6 py-2.5 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">download</span>
+                    EXPORT LOGS
+                </button>
+<button class="bg-primary hover:bg-primary/90 text-background-dark px-6 py-2.5 rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+                    DEPLOY NEW NODE
+                </button>
+</div>
+</div>
+<!-- Metric Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<div class="glassmorphism p-8 rounded-xl neon-glow-info relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">cloud_sync</span>
+</div>
+<p class="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase mb-4">Total Active Proxies</p>
+<div class="flex items-baseline gap-3">
+<h3 class="text-5xl font-bold tracking-tighter">42,910</h3>
+<span class="text-info text-sm font-bold">+2.4%</span>
+</div>
+<div class="mt-6 w-full bg-white/5 h-1 rounded-full overflow-hidden">
+<div class="bg-info h-full w-3/4"></div>
+</div>
+</div>
+<div class="glassmorphism p-8 rounded-xl neon-glow-primary relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary">verified_user</span>
+</div>
+<p class="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase mb-4">Clean Mobile IPs</p>
+<div class="flex items-baseline gap-3">
+<h3 class="text-5xl font-bold tracking-tighter text-primary">38,102</h3>
+<span class="text-primary text-sm font-bold">+11.8%</span>
+</div>
+<div class="mt-6 w-full bg-white/5 h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[88%]"></div>
+</div>
+</div>
+<div class="glassmorphism p-8 rounded-xl neon-glow-danger relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-danger">report_problem</span>
+</div>
+<p class="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase mb-4">Risky / Flagged IPs</p>
+<div class="flex items-baseline gap-3">
+<h3 class="text-5xl font-bold tracking-tighter text-danger">1,204</h3>
+<span class="text-danger text-sm font-bold">-0.8%</span>
+</div>
+<div class="mt-6 w-full bg-white/5 h-1 rounded-full overflow-hidden">
+<div class="bg-danger h-full w-1/4"></div>
+</div>
+</div>
+</div>
+<!-- Asymmetric Layout: Input and Table -->
+<div class="asymmetric-grid items-start">
+<!-- Sidebar Input Section -->
+<div class="space-y-6 sticky top-28">
+<div class="glassmorphism p-6 rounded-xl">
+<h4 class="text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">data_object</span>
+                        Bulk Input
+                    </h4>
+<textarea class="w-full h-80 bg-black/40 border-white/10 rounded-lg text-slate-300 font-mono text-sm focus:ring-primary focus:border-primary placeholder:text-slate-700 p-4 resize-none transition-all" placeholder="IP:PORT:USER:PASS
+192.168.1.1:8080:admin:secret..."></textarea>
+<div class="mt-6 space-y-3">
+<button class="w-full bg-primary text-background-dark py-3 rounded font-bold text-sm tracking-widest uppercase hover:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">analytics</span>
+                            Analyze &amp; Import
+                        </button>
+<div class="flex gap-2">
+<button class="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 py-2.5 rounded text-xs font-bold flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-sm">upload_file</span>
+                                CSV
+                            </button>
+<button class="flex-1 bg-white/5 hover:bg-white/10 border border-white/5 py-2.5 rounded text-xs font-bold flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-sm">link</span>
+                                URL
+                            </button>
+</div>
+</div>
+</div>
+<div class="glassmorphism p-6 rounded-xl border-primary/20">
+<div class="flex items-center justify-between mb-4">
+<span class="text-xs font-bold text-slate-500 tracking-widest uppercase">Quick Settings</span>
+<span class="material-symbols-outlined text-sm text-slate-500">settings</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between text-sm">
+<span class="text-slate-400">Auto-Rotate</span>
+<div class="w-10 h-5 bg-primary/20 rounded-full relative">
+<div class="absolute right-1 top-1 w-3 h-3 bg-primary rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between text-sm">
+<span class="text-slate-400">Deep Scan</span>
+<div class="w-10 h-5 bg-white/10 rounded-full relative">
+<div class="absolute left-1 top-1 w-3 h-3 bg-slate-500 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Data Table Section -->
+<div class="glassmorphism rounded-xl overflow-hidden min-h-[800px]">
+<div class="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+<div class="flex items-center gap-4">
+<span class="text-sm font-bold tracking-widest uppercase text-slate-400">Live Traffic Logs</span>
+<div class="flex gap-2">
+<span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded">SOCKS5</span>
+<span class="px-2 py-0.5 bg-info/10 text-info text-[10px] font-bold rounded">HTTP/S</span>
+</div>
+</div>
+<div class="flex items-center gap-2 border border-white/10 rounded px-3 py-1.5 bg-black/20">
+<span class="material-symbols-outlined text-sm text-slate-500">search</span>
+<input class="bg-transparent border-none text-xs focus:ring-0 placeholder:text-slate-700 w-48" placeholder="Filter by IP or Country..." type="text"/>
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="text-[10px] font-bold tracking-[0.2em] uppercase text-slate-500 border-b border-white/5">
+<th class="px-8 py-5">IP Address</th>
+<th class="px-8 py-5">Protocol</th>
+<th class="px-8 py-5">Geo Location</th>
+<th class="px-8 py-5">Latency</th>
+<th class="px-8 py-5">Status</th>
+<th class="px-8 py-5 text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/[0.03]">
+<!-- Row 1 -->
+<tr class="hover:bg-white/[0.02] transition-colors group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="font-mono font-medium text-slate-200">185.242.115.82</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="text-xs font-bold text-slate-400">SOCKS5</span>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<div class="w-5 h-3 bg-slate-800 rounded-sm"></div>
+<span class="text-sm font-medium">United States</span>
+<span class="text-[10px] text-slate-500">VA</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<span class="text-primary text-sm font-bold">42ms</span>
+<div class="w-12 h-1 bg-white/5 rounded-full">
+<div class="h-full bg-primary w-1/4"></div>
+</div>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="text-[10px] font-bold text-primary uppercase">Secure</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right">
+<button class="opacity-0 group-hover:opacity-100 material-symbols-outlined text-slate-500 hover:text-white transition-all">more_vert</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-white/[0.02] transition-colors group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-danger"></div>
+<span class="font-mono font-medium text-slate-200">45.132.221.14</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="text-xs font-bold text-slate-400">HTTP</span>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<div class="w-5 h-3 bg-slate-800 rounded-sm"></div>
+<span class="text-sm font-medium">Russia</span>
+<span class="text-[10px] text-slate-500">MSK</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<span class="text-danger text-sm font-bold">892ms</span>
+<div class="w-12 h-1 bg-white/5 rounded-full">
+<div class="h-full bg-danger w-full"></div>
+</div>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2 px-3 py-1 bg-danger/10 rounded-full w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-danger"></span>
+<span class="text-[10px] font-bold text-danger uppercase">Risky</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right">
+<button class="opacity-0 group-hover:opacity-100 material-symbols-outlined text-slate-500 hover:text-white transition-all">more_vert</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-white/[0.02] transition-colors group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-info"></div>
+<span class="font-mono font-medium text-slate-200">103.21.164.5</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="text-xs font-bold text-slate-400">SOCKS5</span>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<div class="w-5 h-3 bg-slate-800 rounded-sm"></div>
+<span class="text-sm font-medium">Singapore</span>
+<span class="text-[10px] text-slate-500">SG</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<span class="text-info text-sm font-bold">156ms</span>
+<div class="w-12 h-1 bg-white/5 rounded-full">
+<div class="h-full bg-info w-1/2"></div>
+</div>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2 px-3 py-1 bg-info/10 rounded-full w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-info"></span>
+<span class="text-[10px] font-bold text-info uppercase">Testing</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right">
+<button class="opacity-0 group-hover:opacity-100 material-symbols-outlined text-slate-500 hover:text-white transition-all">more_vert</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-white/[0.02] transition-colors group">
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="font-mono font-medium text-slate-200">212.10.33.190</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<span class="text-xs font-bold text-slate-400">SOCKS5</span>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<div class="w-5 h-3 bg-slate-800 rounded-sm"></div>
+<span class="text-sm font-medium">Germany</span>
+<span class="text-[10px] text-slate-500">BER</span>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2">
+<span class="text-primary text-sm font-bold">28ms</span>
+<div class="w-12 h-1 bg-white/5 rounded-full">
+<div class="h-full bg-primary w-1/6"></div>
+</div>
+</div>
+</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="text-[10px] font-bold text-primary uppercase">Secure</span>
+</div>
+</td>
+<td class="px-8 py-6 text-right">
+<button class="opacity-0 group-hover:opacity-100 material-symbols-outlined text-slate-500 hover:text-white transition-all">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-8 flex justify-center border-t border-white/5">
+<button class="text-xs font-bold tracking-widest text-slate-500 hover:text-primary transition-colors flex items-center gap-2">
+                        VIEW ALL 42,910 NODES
+                        <span class="material-symbols-outlined text-sm">arrow_forward_ios</span>
+</button>
+</div>
+</div>
+</div>
+<!-- System Logs Section -->
+<div class="mt-12 glassmorphism rounded-xl p-8">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-xl font-bold tracking-tight">System Events</h3>
+<span class="text-xs text-slate-500">Last updated: 12:42:01 UTC</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+<div class="space-y-2">
+<p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Connection Spike</p>
+<p class="text-sm text-slate-300">Detected 4k+ requests from HK region. Auto-balancing active.</p>
+</div>
+<div class="space-y-2">
+<p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Node Failure</p>
+<p class="text-sm text-slate-300">FRA-21 cluster down. Re-routing traffic to AMS-04.</p>
+</div>
+<div class="space-y-2">
+<p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">New Deployment</p>
+<p class="text-sm text-slate-300">120 Clean Mobile IPs added to Residential Pool.</p>
+</div>
+<div class="space-y-2">
+<p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Security Alert</p>
+<p class="text-sm text-danger font-medium">Attempted brute force on Node 8812 blocked.</p>
+</div>
+</div>
+</div>
+</main>
+<footer class="mt-20 border-t border-white/5 py-12 px-8">
+<div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-slate-600">shield_locked</span>
+<p class="text-slate-600 text-sm font-medium">© 2024 Proxy Sentinel Infrastructure. All rights reserved.</p>
+</div>
+<div class="flex items-center gap-8">
+<a class="text-xs font-bold text-slate-600 hover:text-primary transition-colors tracking-widest uppercase" href="#">Privacy</a>
+<a class="text-xs font-bold text-slate-600 hover:text-primary transition-colors tracking-widest uppercase" href="#">Terms</a>
+<a class="text-xs font-bold text-slate-600 hover:text-primary transition-colors tracking-widest uppercase" href="#">API Docs</a>
+<a class="text-xs font-bold text-slate-600 hover:text-primary transition-colors tracking-widest uppercase" href="#">Support</a>
+</div>
+</div>
+</footer>
+</body></html>

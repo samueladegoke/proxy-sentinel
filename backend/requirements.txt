@@ -1,0 +1,28 @@
+# Proxy Sentinel Backend Requirements
+# ===================================
+# High-Performance Async Version
+
+# Core Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+
+# Async HTTP Client (Primary - High Performance)
+aiohttp>=3.9.0
+aiohttp-socks>=0.8.0  # SOCKS4/SOCKS5 support for aiohttp
+
+# Sync HTTP Client (Fallback/Backward Compatibility)
+requests>=2.31.0
+PySocks>=1.7.1  # Required for SOCKS4/SOCKS5 proxy support
+
+# Geolocation
+maxminddb>=2.6.0
+
+# Scheduling
+apscheduler>=3.10.0
+
+# Development
+python-dotenv>=1.0.0
+
+# Optional: For WebSocket compression
+# websockets>=12.0

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-labelledby="title desc">
+  <title id="title">Proxy Sentinel logo candidate</title>
+  <desc id="desc">Proxy Sentinel mark with shield, routed network path, and verified status nodes.</desc>
+  <rect width="800" height="800" rx="88" fill="#06172A"/>
+  <path d="M400 664 170 548V220l230-72 230 72v328L400 664Z" fill="#10243A" stroke="#D7B24A" stroke-width="26" stroke-linejoin="round"/>
+  <path d="M260 430h108l64-96h110M260 514h142l58-56h82M260 346h92l58-58h132" fill="none" stroke="#22DDEB" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="260" cy="346" r="24" fill="#F2D46B"/>
+  <circle cx="260" cy="430" r="24" fill="#F2D46B"/>
+  <circle cx="260" cy="514" r="24" fill="#F2D46B"/>
+  <circle cx="542" cy="288" r="24" fill="#36D399"/>
+  <circle cx="542" cy="334" r="24" fill="#36D399"/>
+  <circle cx="542" cy="458" r="24" fill="#36D399"/>
+  <text x="400" y="734" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="50" font-weight="800" fill="#F8FAFC">PROXY SENTINEL</text>
+</svg>

@@ -19,7 +19,6 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import maxminddb
 import os
-import time
 import threading
 import logging
 from typing import Optional, Dict, Any, Tuple

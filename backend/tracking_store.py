@@ -294,45 +294,54 @@ class TrackingLogStore:
                 ),
             )
 
-            updates = {}
-            if ip:
-                updates.update({
-                    "latest_ip": ip,
-                    "latest_region": region,
-                    "latest_city": city,
-                    "latest_country": country,
-                    "latest_geo_source": result.get("geo_source"),
-                    "latest_geo_provider": result.get("geo_provider"),
-                    "latest_isp": result.get("isp"),
-                    "latest_mobile": None if result.get("mobile") is None else 1 if result.get("mobile") else 0,
-                    "latest_risk_level": result.get("risk_level"),
-                })
             row = conn.execute(
                 "SELECT first_ip, first_change_at FROM tracking_runs WHERE run_id = ?",
                 (session_data["run_id"],),
             ).fetchone()
-            if row and not row["first_ip"] and ip:
-                updates["first_ip"] = ip
-                updates["first_region"] = region
-                updates["first_city"] = city
-            if (changed_ip or changed_location) and row and not row["first_change_at"]:
-                updates["first_change_at"] = now
-                updates["first_change_elapsed_seconds"] = elapsed_seconds
-
-            set_clauses = [f"{key} = ?" for key in updates]
-            set_clauses.extend([
-                "observation_count = observation_count + 1",
-                "change_count = change_count + ?",
-            ])
-            values = list(updates.values())
-            values.extend([1 if (changed_ip or changed_location) else 0, session_data["run_id"]])
+            has_ip = 1 if ip else 0
+            should_set_first_ip = 1 if row and not row["first_ip"] and ip else 0
+            should_set_first_change = 1 if (changed_ip or changed_location) and row and not row["first_change_at"] else 0
+            latest_mobile = None if result.get("mobile") is None else 1 if result.get("mobile") else 0
             conn.execute(
-                f"""
+                """
                 UPDATE tracking_runs
-                SET {", ".join(set_clauses)}
+                SET
+                    latest_ip = CASE WHEN ? THEN ? ELSE latest_ip END,
+                    latest_region = CASE WHEN ? THEN ? ELSE latest_region END,
+                    latest_city = CASE WHEN ? THEN ? ELSE latest_city END,
+                    latest_country = CASE WHEN ? THEN ? ELSE latest_country END,
+                    latest_geo_source = CASE WHEN ? THEN ? ELSE latest_geo_source END,
+                    latest_geo_provider = CASE WHEN ? THEN ? ELSE latest_geo_provider END,
+                    latest_isp = CASE WHEN ? THEN ? ELSE latest_isp END,
+                    latest_mobile = CASE WHEN ? THEN ? ELSE latest_mobile END,
+                    latest_risk_level = CASE WHEN ? THEN ? ELSE latest_risk_level END,
+                    first_ip = CASE WHEN ? THEN ? ELSE first_ip END,
+                    first_region = CASE WHEN ? THEN ? ELSE first_region END,
+                    first_city = CASE WHEN ? THEN ? ELSE first_city END,
+                    first_change_at = CASE WHEN ? THEN ? ELSE first_change_at END,
+                    first_change_elapsed_seconds = CASE WHEN ? THEN ? ELSE first_change_elapsed_seconds END,
+                    observation_count = observation_count + 1,
+                    change_count = change_count + ?
                 WHERE run_id = ?
                 """,
-                values,
+                (
+                    has_ip, ip,
+                    has_ip, region,
+                    has_ip, city,
+                    has_ip, country,
+                    has_ip, result.get("geo_source"),
+                    has_ip, result.get("geo_provider"),
+                    has_ip, result.get("isp"),
+                    has_ip, latest_mobile,
+                    has_ip, result.get("risk_level"),
+                    should_set_first_ip, ip,
+                    should_set_first_ip, region,
+                    should_set_first_ip, city,
+                    should_set_first_change, now,
+                    should_set_first_change, elapsed_seconds,
+                    1 if (changed_ip or changed_location) else 0,
+                    session_data["run_id"],
+                ),
             )
 
         return {
@@ -366,19 +375,26 @@ class TrackingLogStore:
 
     def runs(self, limit: int = 100, status: Optional[str] = None) -> List[Dict[str, Any]]:
         limit = max(1, min(limit, 1000))
-        where = ""
-        if status == "active":
-            where = "WHERE ended_at IS NULL"
-        elif status == "stopped":
-            where = "WHERE ended_at IS NOT NULL"
 
         with self._lock, self._connect() as conn:
-            return [
-                dict(row)
-                for row in conn.execute(
-                    f"SELECT * FROM tracking_runs {where} ORDER BY started_at DESC LIMIT ?",
+            if status == "active":
+                rows = conn.execute(
+                    "SELECT * FROM tracking_runs WHERE ended_at IS NULL ORDER BY started_at DESC LIMIT ?",
                     (limit,),
                 ).fetchall()
+            elif status == "stopped":
+                rows = conn.execute(
+                    "SELECT * FROM tracking_runs WHERE ended_at IS NOT NULL ORDER BY started_at DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM tracking_runs ORDER BY started_at DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
+            return [
+                dict(row)
+                for row in rows
             ]
 
     def run_details(self, run_id: str, observation_limit: int = 500) -> Dict[str, Any]:

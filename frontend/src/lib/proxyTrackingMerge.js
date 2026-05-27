@@ -126,18 +126,22 @@ function historicalOverlayForRun(run) {
 function historicalOverlayForLog(log) {
     if (!log || log.status !== 'success' || !hasValue(log.ip)) return null;
 
-    return finalizeOverlay({
+    const overlay = {
         status: 'success',
         query: log.ip,
         local_region: log.region,
         local_city: log.city,
         local_country: log.country,
         isp: log.isp,
-        mobile: log.mobile === true || log.mobile === 1,
         risk_level: log.risk_level,
         geo_source: log.geo_source,
         tracking_run_id: log.run_id
-    });
+    };
+    if (hasValue(log.mobile)) {
+        overlay.mobile = log.mobile === true || log.mobile === 1;
+    }
+
+    return finalizeOverlay(overlay);
 }
 
 function buildHistoricalOverlayBySession(trackingRuns = [], trackingLogs = []) {

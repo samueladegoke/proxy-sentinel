@@ -39,9 +39,10 @@ export class SoundNotifier {
     }
 
     playAlert() {
-        this.play(880, 150);
-        setTimeout(() => this.play(988, 150), 200);
-        setTimeout(() => this.play(1175, 300), 400);
+        const baseFrequency = this.frequency;
+        this.play(baseFrequency, 150);
+        setTimeout(() => this.play(Math.round(baseFrequency * 1.12), 150), 200);
+        setTimeout(() => this.play(Math.round(baseFrequency * 1.33), 300), 400);
     }
 
     setEnabled(enabled) {
@@ -53,7 +54,10 @@ export class SoundNotifier {
     }
 
     setFrequency(frequency) {
-        this.frequency = frequency;
+        const value = Number(frequency);
+        if (Number.isFinite(value)) {
+            this.frequency = Math.max(20, Math.min(20000, value));
+        }
     }
 
     setDuration(duration) {

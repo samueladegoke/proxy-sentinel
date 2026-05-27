@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/validateBuildEnv.mjs",
     "build": "vite build",
     "lint": "eslint .",
+    "test": "node tests/apiConfig.test.mjs && node tests/buildEnv.test.mjs && node tests/componentContracts.test.mjs && node tests/proxyMetrics.test.mjs && node tests/proxyTrackingMerge.test.mjs && node tests/proxyTrackingPayload.test.mjs && node tests/scanDiagnostics.test.mjs && node tests/securityConfig.test.mjs && node tests/soundNotifier.test.mjs && node tests/trackingPresentation.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

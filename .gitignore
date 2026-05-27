@@ -74,6 +74,8 @@ backend/browserleaks_cache.json
 backend/scan_sample_logs/
 Format Data for Excel.md
 proxy_checker.py
+proxy_checker.proxies.txt
+*.proxies.txt
 
 # Local agent/runtime state
 .omx/

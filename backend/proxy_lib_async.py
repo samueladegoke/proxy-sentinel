@@ -184,8 +184,8 @@ def _network_error_result(
         session_id = extract_session_id(password)
         if protocol == "http":
             protocol = detected_protocol
-    except Exception:
-        pass
+    except (ValueError, IndexError) as exc:
+        logger.debug("Could not parse proxy metadata for network error result: %s", exc)
 
     message = str(error)[:100] or error.__class__.__name__
     return {

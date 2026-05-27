@@ -3,6 +3,19 @@ import { cn } from '../lib/utils';
 import { soundNotifier } from '../lib/sound';
 
 export function SettingsPanel({ settings, onSettingsChange, onClose }) {
+    const updateSoundEnabled = (enabled) => {
+        soundNotifier.setEnabled(enabled);
+        onSettingsChange({ ...settings, soundEnabled: enabled });
+    };
+
+    const testSound = () => {
+        soundNotifier.setEnabled(settings.soundEnabled);
+        if (!settings.soundEnabled) return;
+        soundNotifier.setVolume(settings.volume);
+        soundNotifier.setFrequency(settings.frequency);
+        soundNotifier.playAlert();
+    };
+
     return (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 animate-in fade-in">
             <div className="bg-card border border-border rounded-lg shadow-xl w-full max-w-md animate-in zoom-in-95">
@@ -24,7 +37,7 @@ export function SettingsPanel({ settings, onSettingsChange, onClose }) {
                                 <span>Sound Alerts</span>
                             </div>
                             <button
-                                onClick={() => onSettingsChange({ ...settings, soundEnabled: !settings.soundEnabled })}
+                                onClick={() => updateSoundEnabled(!settings.soundEnabled)}
                                 className={cn(
                                     "w-12 h-6 rounded-full transition-colors",
                                     settings.soundEnabled ? "bg-primary" : "bg-muted"
@@ -68,12 +81,9 @@ export function SettingsPanel({ settings, onSettingsChange, onClose }) {
                         </div>
 
                         <button
-                            onClick={() => {
-                                soundNotifier.setVolume(settings.volume);
-                                soundNotifier.setFrequency(settings.frequency);
-                                soundNotifier.playAlert();
-                            }}
-                            className="w-full px-4 py-2 bg-muted rounded-md text-sm hover:bg-muted/80 transition-colors"
+                            onClick={testSound}
+                            disabled={!settings.soundEnabled}
+                            className="w-full px-4 py-2 bg-muted rounded-md text-sm transition-colors hover:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             Test Sound
                         </button>

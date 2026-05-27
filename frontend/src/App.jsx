@@ -13,11 +13,8 @@ import proxySentinelLogo from './assets/proxy-sentinel-logo.svg'
 import proxySentinelHero from './assets/proxy-sentinel-hero.webp'
 import {
   formatApiError,
-  getApiAuthToken,
   resolveApiBaseUrl,
-  toWebSocketUrl,
-  withApiAuth,
-  withWebSocketAuth
+  toWebSocketUrl
 } from './lib/apiConfig'
 import { formatProxyLatency, isRiskFlaggedProxy, sortProxyResults } from './lib/proxyMetrics'
 import { prepareScanDiagnostics } from './lib/scanDiagnostics'
@@ -49,10 +46,9 @@ const API_BASE_URL = resolveApiBaseUrl({
   location: globalThis.location,
   isProduction: import.meta.env.PROD
 });
-const API_AUTH_TOKEN = getApiAuthToken({ envToken: import.meta.env.VITE_PROXY_SENTINEL_API_TOKEN });
 const WS_URL = toWebSocketUrl(API_BASE_URL);
-const apiFetch = (path, options = {}) => fetch(`${API_BASE_URL}${path}`, withApiAuth(options, API_AUTH_TOKEN));
-const wsEndpoint = (path) => withWebSocketAuth(`${WS_URL}${path}`, API_AUTH_TOKEN);
+const apiFetch = (path, options = {}) => fetch(`${API_BASE_URL}${path}`, options);
+const wsEndpoint = (path) => `${WS_URL}${path}`;
 
 const NIGERIA_LOCATION_OPTIONS = [
   { value: '_country-ng', label: 'Any Nigeria' },

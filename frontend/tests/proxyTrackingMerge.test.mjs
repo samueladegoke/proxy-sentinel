@@ -182,6 +182,36 @@ assert.equal(historical.geo_source, 'db-ip-api');
 assert.equal(historical.geo_confirmation_pending, false);
 assert.equal(historical.tracking_run_id, 'ff8a6475-history');
 
+const historicalMissingLogMobile = mergeProxyResultsWithTrackedSessions(
+  [mmdbProxy],
+  {},
+  [{
+    run_id: 'ff8a6475-history',
+    session: 'ff8a6475',
+    started_at: 1777990000,
+    latest_ip: '102.91.5.107',
+    latest_region: 'FCT',
+    latest_city: 'Bwari',
+    latest_mobile: 1
+  }],
+  [{
+    run_id: 'ff8a6475-history',
+    session: 'ff8a6475',
+    checked_at: 1777990300,
+    status: 'success',
+    ip: '102.91.5.107',
+    region: 'FCT',
+    city: 'Bwari',
+    geo_source: 'db-ip-api'
+  }]
+)[0];
+
+assert.equal(
+  historicalMissingLogMobile.mobile,
+  true,
+  'keeps known run mobile flag when a newer historical log omits mobile'
+);
+
 const activeWins = mergeProxyResultsWithTrackedSessions(
   [mmdbProxy],
   {

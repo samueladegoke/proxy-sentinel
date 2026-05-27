@@ -2,11 +2,8 @@ import assert from 'node:assert/strict';
 
 import {
   formatApiError,
-  getApiAuthToken,
   resolveApiBaseUrl,
-  toWebSocketUrl,
-  withApiAuth,
-  withWebSocketAuth
+  toWebSocketUrl
 } from '../src/lib/apiConfig.js';
 
 assert.equal(
@@ -33,15 +30,6 @@ assert.equal(
   'derives ws:// URLs from http:// API URLs'
 );
 
-const authedOptions = withApiAuth({ headers: { 'Content-Type': 'application/json' } }, 'token-123');
-assert.equal(authedOptions.headers.get('Content-Type'), 'application/json');
-assert.equal(authedOptions.headers.get('X-Proxy-Sentinel-Token'), 'token-123');
-assert.equal(getApiAuthToken({ envToken: ' token-123 ' }), 'token-123');
-assert.equal(
-  withWebSocketAuth('ws://127.0.0.1:8000/ws/check', 'token-123'),
-  'ws://127.0.0.1:8000/ws/check?token=token-123'
-);
-
 assert.match(
   formatApiError(new TypeError('Failed to fetch'), 'Run IPRoyal scan', 'http://127.0.0.1:8000'),
   /Run IPRoyal scan could not reach Proxy Sentinel API at http:\/\/127\.0\.0\.1:8000/,
@@ -50,6 +38,6 @@ assert.match(
 
 assert.match(
   formatApiError(new Error('Unauthorized'), 'Load tracking', 'http://127.0.0.1:8000'),
-  /API authentication/,
+  /Browser builds cannot carry privileged API tokens/,
   'turns auth failures into token configuration messages'
 );

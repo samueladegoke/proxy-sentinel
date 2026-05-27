@@ -13,7 +13,7 @@ PERFORMANCE OPTIMIZATIONS:
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, ValidationError, field_validator, validator
+from pydantic import BaseModel, Field, ValidationError, field_validator
 from typing import List, Optional, Dict, Any, Set
 import asyncio
 import aiohttp
@@ -30,14 +30,9 @@ import ipaddress
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from dotenv import load_dotenv
-
-load_dotenv()
-
-# Import async proxy library
 from proxy_lib_async import (
     check_proxies_stream,
     check_proxies_batch_async,
-    check_single_proxy_async,
     check_single_proxy_async_wrapper,
     cleanup as cleanup_db,
     extract_session_id,
@@ -48,6 +43,8 @@ from proxy_lib_async import (
     parse_proxy_string
 )
 from tracking_store import TrackingLogStore
+
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -93,7 +90,8 @@ class TrackRequest(BaseModel):
     expected_state: Optional[str] = Field(None, max_length=120)
     expected_lifetime_hours: Optional[float] = Field(None, ge=0.01, le=720)
 
-    @validator('session')
+    @field_validator('session')
+    @classmethod
     def validate_session(cls, v):
         # Allow alphanumeric with dashes and underscores
         cleaned = v.replace('-', '').replace('_', '')
@@ -103,11 +101,12 @@ class TrackRequest(BaseModel):
 
 
 class CheckRequest(BaseModel):
-    proxies: Optional[List[str]] = Field(None, max_items=500)
-    proxy_ids: Optional[List[str]] = Field(None, max_items=500)
+    proxies: Optional[List[str]] = Field(None, max_length=500)
+    proxy_ids: Optional[List[str]] = Field(None, max_length=500)
     protocol: str = Field("http")
 
-    @validator('proxies')
+    @field_validator('proxies')
+    @classmethod
     def validate_proxies(cls, v):
         if v is None:
             return v
@@ -125,7 +124,8 @@ class CheckRequest(BaseModel):
             raise ValueError("A scan can include at most 500 proxies")
         return cleaned
 
-    @validator('proxy_ids')
+    @field_validator('proxy_ids')
+    @classmethod
     def validate_proxy_ids(cls, v):
         if v is None:
             return v
@@ -138,7 +138,8 @@ class CheckRequest(BaseModel):
             raise ValueError("A scan can include at most 500 proxy IDs")
         return cleaned
 
-    @validator('protocol')
+    @field_validator('protocol')
+    @classmethod
     def validate_protocol(cls, v):
         valid = ["http", "https", "socks4", "socks5"]
         if v.lower() not in valid:
@@ -159,14 +160,16 @@ class IPRoyalCheckRequest(BaseModel):
     target_match_count: int = Field(default=0, ge=0, le=500)
     max_attempts: int = Field(default=1, ge=1, le=20)
 
-    @validator('rotation')
+    @field_validator('rotation')
+    @classmethod
     def validate_rotation(cls, v):
         valid = ["sticky", "random"]
         if v.lower() not in valid:
             raise ValueError(f'Rotation must be one of: {valid}')
         return v.lower()
 
-    @validator('location')
+    @field_validator('location')
+    @classmethod
     def validate_location(cls, v):
         value = v.strip().lower()
         match = re.fullmatch(r"_?country-ng(?:_state-([a-z0-9]+))?", value)
@@ -181,19 +184,22 @@ class IPRoyalCheckRequest(BaseModel):
             raise ValueError("Unsupported Nigeria state filter")
         return value if value.startswith("_") else f"_{value}"
 
-    @validator('hostname')
+    @field_validator('hostname')
+    @classmethod
     def validate_hostname(cls, v):
         if v != IPROYAL_HOSTNAME:
             raise ValueError("IPRoyal hostname is backend-controlled")
         return v
 
-    @validator('port')
+    @field_validator('port')
+    @classmethod
     def validate_port(cls, v):
         if v != IPROYAL_PORT:
             raise ValueError("IPRoyal port selector is backend-controlled")
         return v
 
-    @validator('lifetime')
+    @field_validator('lifetime')
+    @classmethod
     def validate_lifetime(cls, v):
         if v is None:
             return v
@@ -207,7 +213,8 @@ class IPRoyalCheckRequest(BaseModel):
             raise ValueError("Sticky lifetime must be between 1h and 168h")
         return value
 
-    @validator('protocol')
+    @field_validator('protocol')
+    @classmethod
     def validate_protocol(cls, v):
         valid = ["http", "https", "socks4", "socks5"]
         if v.lower() not in valid:
@@ -2182,8 +2189,8 @@ async def websocket_check_proxies(websocket: WebSocket):
         logger.exception(f"Error in WebSocket check: {e}")
         try:
             await websocket.send_json({"type": "error", "message": "Proxy scan failed"})
-        except:
-            pass
+        except RuntimeError as send_error:
+            logger.debug("Unable to send proxy scan failure after websocket error: %s", send_error)
 
 
 @app.websocket("/ws/iproyal-check")
@@ -2315,8 +2322,8 @@ async def websocket_iproyal_check(websocket: WebSocket):
         logger.exception(f"Error in IPRoyal WebSocket check: {e}")
         try:
             await websocket.send_json({"type": "error", "message": "IPRoyal scan failed"})
-        except:
-            pass
+        except RuntimeError as send_error:
+            logger.debug("Unable to send IPRoyal scan failure after websocket error: %s", send_error)
 
 
 @app.websocket("/ws/tracking")
@@ -2377,7 +2384,7 @@ async def perform_tracking_checks():
                 current_city = result.get('local_city') or result.get('city')
 
                 if log_event["changed_ip"]:
-                    event = tracking_manager.record_ip_change(
+                    tracking_manager.record_ip_change(
                         session_id,
                         log_event.get("old_ip"),
                         current_ip,
@@ -2449,7 +2456,7 @@ async def perform_tracking_checks():
 if __name__ == "__main__":
     import uvicorn
 
-    host = os.getenv("HOST", "0.0.0.0")
+    host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", "8000"))
     debug = os.getenv("DEBUG", "false").lower() == "true"
 

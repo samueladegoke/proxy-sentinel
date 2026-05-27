@@ -1,14 +1,20 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { CheckCircle2, AlertTriangle, Info, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export function Toast({ message, type = 'info', onClose, duration = 5000 }) {
+    const onCloseRef = useRef(onClose);
+
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    }, [onClose]);
+
     useEffect(() => {
         if (duration > 0) {
-            const timer = setTimeout(onClose, duration);
+            const timer = setTimeout(() => onCloseRef.current?.(), duration);
             return () => clearTimeout(timer);
         }
-    }, [duration, onClose]);
+    }, [duration, message]);
 
     const bgColor = {
         success: 'border-primary/25 bg-card text-foreground',
